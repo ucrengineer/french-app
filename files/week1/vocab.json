@@ -1,0 +1,12 @@
+[
+  {
+    "french": "bonjour",
+    "english": "hello",
+    "example": "Bonjour ! Ça va ?"
+  },
+  {
+    "french": "merci",
+    "english": "thank you",
+    "notes": "Often followed by 'beaucoup' for 'thank you very much'."
+  }
+]
