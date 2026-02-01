@@ -1,6 +1,6 @@
 # French Vocabulary Study (Blazor WASM)
 
-A mobile-friendly Blazor WebAssembly app for studying French vocabulary from weekly JSON files.
+Blazor WebAssembly app for studying weekly French vocabulary for **FREN 102-601** at **Southwestern Community College**.
 
 ## Features
 - Weeks list (`/vocabulary`)
@@ -10,6 +10,8 @@ A mobile-friendly Blazor WebAssembly app for studying French vocabulary from wee
 ## Getting started
 1. Run the app.
 2. Add weekly vocab JSON files under `french-app/wwwroot/files/`.
+
+> Note: This repo is tailored to the FREN 102-601 course workflow/content. If you are using it for a different course/section, update the vocabulary JSON files and any course-specific wording.
 
 ### File layout
 - `french-app/wwwroot/files/index.json`
