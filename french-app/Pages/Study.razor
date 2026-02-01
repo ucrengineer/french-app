@@ -8,7 +8,7 @@
 <div class="vocab-page">
     <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
         <h1 class="m-0">Study</h1>
-        <a class="btn btn-outline-secondary" href="/vocabulary">Weeks</a>
+        <a class="btn btn-outline-secondary" href="vocabulary">Weeks</a>
     </div>
 
     <p class="text-muted mt-2">Choose a week (or study all).</p>
@@ -24,7 +24,7 @@
     else
     {
         <div class="vocab-week-grid">
-            <a class="card vocab-week-card" href="/vocabulary/study/all">
+            <a class="card vocab-week-card" href="vocabulary/study/all">
                 <div class="card-body">
                     <div class="h5 mb-1">All weeks</div>
                     <div class="text-muted small">Mix everything</div>
@@ -33,7 +33,7 @@
 
             @foreach (var w in _weeks)
             {
-                <a class="card vocab-week-card" href="/vocabulary/study/@w">
+                <a class="card vocab-week-card" href="vocabulary/study/@w">
                     <div class="card-body">
                         <div class="h5 mb-1">@DisplayWeek(w)</div>
                         <div class="text-muted small">Flashcards</div>
