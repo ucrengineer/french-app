@@ -1,0 +1,46 @@
+# Build results
+[Bb]in/
+[Oo]bj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider
+.idea/
+*.sln.iml
+
+# VS Code
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# NuGet
+*.nupkg
+# Uncomment if you want to ignore packages folder
+# packages/
+
+# Publish output
+publish/
+app.publish/
+
+# Test results
+TestResults/
+
+# Code coverage
+coverage/
+coverage*/
+
+# Local settings
+appsettings.Development.json
+
+# Blazor WASM
+wwwroot/service-worker-assets.js

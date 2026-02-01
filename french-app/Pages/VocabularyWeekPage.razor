@@ -1,0 +1,92 @@
+@page "/vocabulary/{WeekId}"
+@using french_app.Models
+@using french_app.Services
+@inject VocabularyService Vocab
+
+<PageTitle>@Title</PageTitle>
+
+<div class="vocab-page">
+    <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+        <div>
+            <h1 class="m-0">@Title</h1>
+            <div class="text-muted">@(_week?.Terms.Count ?? 0) terms</div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <a class="btn btn-outline-secondary" href="/vocabulary">Back</a>
+            <a class="btn btn-primary" href="/vocabulary/study/@WeekId">Study this week</a>
+        </div>
+    </div>
+
+    @if (_loading)
+    {
+        <div class="alert alert-info mt-3">Loading terms…</div>
+    }
+    else if (!string.IsNullOrWhiteSpace(_error))
+    {
+        <div class="alert alert-danger mt-3">@_error</div>
+    }
+    else if (_week is null || _week.Terms.Count == 0)
+    {
+        <div class="alert alert-warning mt-3">No terms found for @WeekId.</div>
+    }
+    else
+    {
+        <div class="vocab-term-list mt-3">
+            @foreach (var t in _week.Terms)
+            {
+                <div class="card vocab-term-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-start justify-content-between gap-2">
+                            <div class="flex-grow-1">
+                                <div class="vocab-fr">@t.FrenchText</div>
+                                <div class="vocab-en text-muted">@t.EnglishText</div>
+                                @if (!string.IsNullOrWhiteSpace(t.Example))
+                                {
+                                    <div class="small mt-2">@t.Example</div>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(t.Notes))
+                                {
+                                    <div class="small text-muted mt-1">@t.Notes</div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string WeekId { get; set; } = string.Empty;
+
+    private bool _loading = true;
+    private string? _error;
+    private VocabularyWeek? _week;
+
+    private string Title => string.IsNullOrWhiteSpace(WeekId) ? "Vocabulary" : $"{DisplayWeek(WeekId)}";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _loading = true;
+        _error = null;
+        _week = null;
+
+        try
+        {
+            _week = await Vocab.LoadWeekAsync(WeekId);
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static string DisplayWeek(string weekId)
+        => string.IsNullOrWhiteSpace(weekId) ? "Week" : weekId.Replace('-', ' ').Replace('_', ' ');
+}

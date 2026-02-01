@@ -1,0 +1,70 @@
+@page "/vocabulary/study"
+@using french_app.Models
+@using french_app.Services
+@inject VocabularyService Vocab
+
+<PageTitle>Study</PageTitle>
+
+<div class="vocab-page">
+    <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+        <h1 class="m-0">Study</h1>
+        <a class="btn btn-outline-secondary" href="/vocabulary">Weeks</a>
+    </div>
+
+    <p class="text-muted mt-2">Choose a week (or study all).</p>
+
+    @if (_loading)
+    {
+        <div class="alert alert-info">Loading…</div>
+    }
+    else if (!string.IsNullOrWhiteSpace(_error))
+    {
+        <div class="alert alert-danger">@_error</div>
+    }
+    else
+    {
+        <div class="vocab-week-grid">
+            <a class="card vocab-week-card" href="/vocabulary/study/all">
+                <div class="card-body">
+                    <div class="h5 mb-1">All weeks</div>
+                    <div class="text-muted small">Mix everything</div>
+                </div>
+            </a>
+
+            @foreach (var w in _weeks)
+            {
+                <a class="card vocab-week-card" href="/vocabulary/study/@w">
+                    <div class="card-body">
+                        <div class="h5 mb-1">@DisplayWeek(w)</div>
+                        <div class="text-muted small">Flashcards</div>
+                    </div>
+                </a>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private bool _loading = true;
+    private string? _error;
+    private List<string> _weeks = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _weeks = (await Vocab.GetAvailableWeeksAsync()).ToList();
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static string DisplayWeek(string weekId)
+        => string.IsNullOrWhiteSpace(weekId) ? "Week" : weekId.Replace('-', ' ').Replace('_', ' ');
+}

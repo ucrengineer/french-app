@@ -1,0 +1,77 @@
+@page "/vocabulary"
+@using french_app.Services
+@inject VocabularyService Vocab
+
+<PageTitle>Vocabulary</PageTitle>
+
+<div class="vocab-page">
+    <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+        <h1 class="m-0">Vocabulary</h1>
+        <a class="btn btn-outline-primary" href="/vocabulary/study">Study</a>
+    </div>
+
+    <p class="text-muted mt-2 mb-3">Pick a week to view terms or start studying.</p>
+
+    @if (_loading)
+    {
+        <div class="alert alert-info">Loading weeks…</div>
+    }
+    else if (!string.IsNullOrWhiteSpace(_error))
+    {
+        <div class="alert alert-danger">
+            @_error
+            <div class="small mt-2">Expected `wwwroot/files/index.json` containing a JSON array of week folder names (e.g. `["week1","week2"]`).</div>
+        </div>
+    }
+    else if (_weeks.Count == 0)
+    {
+        <div class="alert alert-warning">
+            No weeks found.
+            <div class="small mt-2">Add `wwwroot/files/index.json` and week folders like `wwwroot/files/week1/vocab.json`.</div>
+        </div>
+    }
+    else
+    {
+        <div class="vocab-week-grid">
+            @foreach (var w in _weeks)
+            {
+                <a class="card vocab-week-card" href="/vocabulary/@w">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <div class="h5 mb-1">@DisplayWeek(w)</div>
+                                <div class="text-muted small">Tap to open</div>
+                            </div>
+                            <span class="badge text-bg-primary">Week</span>
+                        </div>
+                    </div>
+                </a>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private bool _loading = true;
+    private string? _error;
+    private List<string> _weeks = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _weeks = (await Vocab.GetAvailableWeeksAsync()).ToList();
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static string DisplayWeek(string weekId)
+        => string.IsNullOrWhiteSpace(weekId) ? "Week" : weekId.Replace('-', ' ').Replace('_', ' ');
+}
