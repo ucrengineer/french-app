@@ -48,9 +48,7 @@
                 const voices = synth.getVoices();
 
                 // Try exact match first, then language prefix (fr vs fr-FR)
-                let voice =
-                    voices.find(v => v.lang === targetLang) ||
-                    voices.find(v => v.lang && v.lang.startsWith(targetLang.split('-')[0]));
+                let voice = voices.find(v => v.voiceURI === "com.apple.voice.compact.fr-FR.Thomas");
 
                 const utterance = new SpeechSynthesisUtterance(text);
 
