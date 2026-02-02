@@ -1,5 +1,8 @@
 ﻿@page "/"
 
+@using Microsoft.JSInterop
+@inject IJSRuntime JS
+
 <PageTitle>Home</PageTitle>
 
 <h1>French vocabulary</h1>
@@ -11,3 +14,50 @@
     <a class="btn btn-outline-primary" href="vocabulary/study">Start studying</a>
     <a class="btn btn-outline-secondary" href="about">About</a>
 </div>
+
+<div class="mt-4">
+    <h2 class="h5">Available speech languages</h2>
+
+    @if (_loadingLanguages)
+    {
+        <div class="text-muted">Loading</div>
+    }
+    else if (_languages.Count == 0)
+    {
+        <div class="text-muted">No speech synthesis voices detected in this browser.</div>
+    }
+    else
+    {
+        <div class="d-flex flex-wrap gap-2">
+            @foreach (var lang in _languages)
+            {
+                <span class="badge text-bg-light border">@lang</span>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private bool _loadingLanguages = true;
+    private readonly List<string> _languages = new();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        try
+        {
+            var langs = await JS.InvokeAsync<string[]>("getAvailableSpeechLanguages");
+            _languages.Clear();
+            if (langs is not null)
+            {
+                _languages.AddRange(langs);
+            }
+        }
+        finally
+        {
+            _loadingLanguages = false;
+            StateHasChanged();
+        }
+    }
+}
