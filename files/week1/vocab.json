@@ -1,12 +1,324 @@
 [
   {
-    "french": "bonjour",
-    "english": "hello",
-    "example": "Bonjour ! Ça va ?"
+    "french": "un balcon",
+    "english": "balcony"
   },
   {
-    "french": "merci",
-    "english": "thank you",
-    "notes": "Often followed by 'beaucoup' for 'thank you very much'."
+    "french": "une cave",
+    "english": "basement, cellar"
+  },
+  {
+    "french": "une chambre",
+    "english": "bedroom"
+  },
+  {
+    "french": "un couloir",
+    "english": "hallway"
+  },
+  {
+    "french": "une cuisine",
+    "english": "kitchen"
+  },
+  {
+    "french": "un escalier",
+    "english": "staircase"
+  },
+  {
+    "french": "un garage",
+    "english": "garage"
+  },
+  {
+    "french": "un jardin",
+    "english": "garden; yard"
+  },
+  {
+    "french": "un mur",
+    "english": "wall"
+  },
+  {
+    "french": "une pièce",
+    "english": "room"
+  },
+  {
+    "french": "une salle à manger",
+    "english": "dining room"
+  },
+  {
+    "french": "une salle de bains",
+    "english": "bathroom"
+  },
+  {
+    "french": "une salle de séjour",
+    "english": "living/family room"
+  },
+  {
+    "french": "un salon",
+    "english": "formal living/sitting room"
+  },
+  {
+    "french": "un sous-sol",
+    "english": "basement"
+  },
+  {
+    "french": "un studio",
+    "english": "studio (apartment)"
+  },
+  {
+    "french": "les toilettes / W.-C.",
+    "english": "restrooms/toilet",
+    "notes": "Plural noun; often used with 'les'."
+  },
+  {
+    "french": "un appartement",
+    "english": "apartment"
+  },
+  {
+    "french": "un immeuble",
+    "english": "building"
+  },
+  {
+    "french": "un logement",
+    "english": "housing"
+  },
+  {
+    "french": "un loyer",
+    "english": "rent"
+  },
+  {
+    "french": "un quartier",
+    "english": "area, neighborhood"
+  },
+  {
+    "french": "une résidence",
+    "english": "residence"
+  },
+  {
+    "french": "une affiche",
+    "english": "poster"
+  },
+  {
+    "french": "une armoire",
+    "english": "armoire, wardrobe"
+  },
+  {
+    "french": "une baignoire",
+    "english": "bathtub"
+  },
+  {
+    "french": "un canapé",
+    "english": "couch"
+  },
+  {
+    "french": "une commode",
+    "english": "dresser, chest of drawers"
+  },
+  {
+    "french": "une douche",
+    "english": "shower"
+  },
+  {
+    "french": "une étagère",
+    "english": "shelf"
+  },
+  {
+    "french": "un fauteuil",
+    "english": "armchair"
+  },
+  {
+    "french": "une fleur",
+    "english": "flower"
+  },
+  {
+    "french": "une lampe",
+    "english": "lamp"
+  },
+  {
+    "french": "un lavabo",
+    "english": "bathroom sink"
+  },
+  {
+    "french": "un meuble",
+    "english": "piece of furniture"
+  },
+  {
+    "french": "un miroir",
+    "english": "mirror"
+  },
+  {
+    "french": "un placard",
+    "english": "closet, cupboard"
+  },
+  {
+    "french": "un rideau",
+    "english": "drape, curtain"
+  },
+  {
+    "french": "un tapis",
+    "english": "rug"
+  },
+  {
+    "french": "un tiroir",
+    "english": "drawer"
+  },
+  {
+    "french": "déménager",
+    "english": "to move out"
+  },
+  {
+    "french": "emménager",
+    "english": "to move in"
+  },
+  {
+    "french": "louer",
+    "english": "to rent"
+  },
+  {
+    "french": "Tu ne déménages pas, finalement ?",
+    "english": "You’re not moving, after all?",
+    "notes": "Expression utile"
+  },
+  {
+    "french": "Heureusement, Sandrine a décidé de rester.",
+    "english": "Thankfully, Sandrine has decided to stay.",
+    "notes": "Expression utile"
+  },
+  {
+    "french": "Seulement, les loyers sont très chers au centre-ville.",
+    "english": "However, rents are very expensive downtown.",
+    "notes": "Expression utile"
+  },
+  {
+    "french": "Je te fais visiter ?",
+    "english": "Shall I give you a tour?",
+    "notes": "Expression utile"
+  },
+  {
+    "french": "Ta salle de bains est vraiment grande.",
+    "english": "Your bathroom is really big.",
+    "notes": "Expression utile"
+  },
+  {
+    "french": "Elle a un beau miroir au-dessus du lavabo.",
+    "english": "It has a nice mirror above the sink.",
+    "notes": "Expression utile"
+  },
+  {
+    "french": "Chez nous, on a seulement une douche.",
+    "english": "At our place, we only have a shower.",
+    "notes": "Expression utile"
+  },
+  {
+    "french": "Aïe !",
+    "english": "Ouch!",
+    "notes": "Expression utile"
+  },
+  {
+    "french": "Tenez.",
+    "english": "Here.",
+    "notes": "Expression utile"
+  },
+  {
+    "french": "Je pensais que tu avais du travail.",
+    "english": "I thought you had work to do.",
+    "notes": "Expression utile"
+  },
+  {
+    "french": "Mais ma chérie, j’ai pris le train pour te faire une surprise.",
+    "english": "But sweetie, I took the train to surprise you.",
+    "notes": "Expression utile"
+  },
+  {
+    "french": "sans",
+    "english": "without"
+  },
+  {
+    "french": "Moi, je m’en vais.",
+    "english": "I am leaving / getting out of here.",
+    "notes": "Expression utile"
+  },
+  {
+    "french": "de temps en temps",
+    "english": "from time to time",
+    "notes": "Locution de temps"
+  },
+  {
+    "french": "en général",
+    "english": "in general",
+    "notes": "Locution de temps"
+  },
+  {
+    "french": "quelquefois",
+    "english": "sometimes",
+    "notes": "Locution de temps"
+  },
+  {
+    "french": "vite",
+    "english": "fast, quickly",
+    "notes": "Locution de temps"
+  },
+  {
+    "french": "absolument",
+    "english": "absolutely",
+    "notes": "Adverbe"
+  },
+  {
+    "french": "activement",
+    "english": "actively",
+    "notes": "Adverbe"
+  },
+  {
+    "french": "bien",
+    "english": "well",
+    "notes": "Adverbe"
+  },
+  {
+    "french": "constamment",
+    "english": "constantly",
+    "notes": "Adverbe"
+  },
+  {
+    "french": "couramment",
+    "english": "fluently",
+    "notes": "Adverbe"
+  },
+  {
+    "french": "différemment",
+    "english": "differently",
+    "notes": "Adverbe"
+  },
+  {
+    "french": "évidemment",
+    "english": "obviously, evidently; of course",
+    "notes": "Adverbe"
+  },
+  {
+    "french": "franchement",
+    "english": "frankly, honestly",
+    "notes": "Adverbe"
+  },
+  {
+    "french": "gentiment",
+    "english": "nicely",
+    "notes": "Adverbe"
+  },
+  {
+    "french": "heureusement",
+    "english": "fortunately",
+    "notes": "Adverbe"
+  },
+  {
+    "french": "mal",
+    "english": "badly",
+    "notes": "Adverbe"
+  },
+  {
+    "french": "malheureusement",
+    "english": "unfortunately",
+    "notes": "Adverbe"
+  },
+  {
+    "french": "vraiment",
+    "english": "really",
+    "notes": "Adverbe"
   }
 ]

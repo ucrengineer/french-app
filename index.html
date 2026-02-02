@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>french-app</title>
     <base href="/french-app/" />
-    <link href="_framework/dotnet.1e9zuak4up.js" rel="preload" as="script" fetchpriority="high" crossorigin="anonymous" integrity="sha256-SaBMxgbvTzRCTsOe9W1Q3TdQRf0b8YQLNFj+M3z19Rg=" />
+    <link href="_framework/dotnet.332xpnhuyt.js" rel="preload" as="script" fetchpriority="high" crossorigin="anonymous" integrity="sha256-MXIhw839NXrJHE99iWkOesdHO+JtMNLNDBBS3Ued2qI=" />
     <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="css/app.css" />
     <link rel="icon" type="image/png" href="favicon.png" />
@@ -14,7 +14,7 @@
     <script type="importmap">{
   "imports": {
     "./_framework/blazor.webassembly.js": "./_framework/blazor.webassembly.66stpp682q.js",
-    "./_framework/dotnet.js": "./_framework/dotnet.1e9zuak4up.js",
+    "./_framework/dotnet.js": "./_framework/dotnet.332xpnhuyt.js",
     "./_framework/dotnet.native.js": "./_framework/dotnet.native.pfhp029mhg.js",
     "./_framework/dotnet.runtime.js": "./_framework/dotnet.runtime.2tx45g8lli.js"
   },
@@ -22,8 +22,8 @@
   "integrity": {
     "./_framework/blazor.webassembly.66stpp682q.js": "sha256-3lCWrko3zwspV40aQhs2S/IMkRSarnHRKIdkHhuXIBA=",
     "./_framework/blazor.webassembly.js": "sha256-3lCWrko3zwspV40aQhs2S/IMkRSarnHRKIdkHhuXIBA=",
-    "./_framework/dotnet.1e9zuak4up.js": "sha256-SaBMxgbvTzRCTsOe9W1Q3TdQRf0b8YQLNFj+M3z19Rg=",
-    "./_framework/dotnet.js": "sha256-SaBMxgbvTzRCTsOe9W1Q3TdQRf0b8YQLNFj+M3z19Rg=",
+    "./_framework/dotnet.332xpnhuyt.js": "sha256-MXIhw839NXrJHE99iWkOesdHO+JtMNLNDBBS3Ued2qI=",
+    "./_framework/dotnet.js": "sha256-MXIhw839NXrJHE99iWkOesdHO+JtMNLNDBBS3Ued2qI=",
     "./_framework/dotnet.native.js": "sha256-hXypU9abvf5FBbVNBG9txpDEDEGgvb97fGlmmVEJoVY=",
     "./_framework/dotnet.native.pfhp029mhg.js": "sha256-hXypU9abvf5FBbVNBG9txpDEDEGgvb97fGlmmVEJoVY=",
     "./_framework/dotnet.runtime.2tx45g8lli.js": "sha256-2lZh9yO0fnzm3Xt7yV+Kox3DH3nK7L8hDhm84VT1xco=",
@@ -46,6 +46,23 @@
         <a href="." class="reload">Reload</a>
         <span class="dismiss">🗙</span>
     </div>
+
+    <script>
+        window.speakText = function (text, lang) {
+            if (!text) return;
+            if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') {
+                console.warn('Speech synthesis is not supported in this browser.');
+                return;
+            }
+
+            // Cancel any in-progress speech so repeated clicks behave predictably.
+            window.speechSynthesis.cancel();
+
+            var utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = lang || 'fr-FR';
+            window.speechSynthesis.speak(utterance);
+        }
+    </script>
     <script src="_framework/blazor.webassembly.66stpp682q.js"></script>
 </body>
 
