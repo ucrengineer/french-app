@@ -28,6 +28,23 @@
         <a href="." class="reload">Reload</a>
         <span class="dismiss">🗙</span>
     </div>
+
+    <script>
+        window.speakText = function (text, lang) {
+            if (!text) return;
+            if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') {
+                console.warn('Speech synthesis is not supported in this browser.');
+                return;
+            }
+
+            // Cancel any in-progress speech so repeated clicks behave predictably.
+            window.speechSynthesis.cancel();
+
+            var utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = lang || 'fr-FR';
+            window.speechSynthesis.speak(utterance);
+        }
+    </script>
     <script src="_framework/blazor.webassembly#[.{fingerprint}].js"></script>
 </body>
 

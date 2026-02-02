@@ -1,7 +1,9 @@
 @page "/vocabulary/{WeekId}"
 @using french_app.Models
 @using french_app.Services
+@using Microsoft.JSInterop
 @inject VocabularyService Vocab
+@inject IJSRuntime JS
 
 <PageTitle>@Title</PageTitle>
 
@@ -39,7 +41,12 @@
                     <div class="card-body">
                         <div class="d-flex align-items-start justify-content-between gap-2">
                             <div class="flex-grow-1">
-                                <div class="vocab-fr">@t.FrenchText</div>
+                                <div class="d-flex align-items-start justify-content-between gap-2">
+                                    <div class="vocab-fr">@t.FrenchText</div>
+                                    <button class="btn btn-outline-secondary btn-sm" title="Play audio" @onclick="(() => SpeakFrench(t.FrenchText))" @onclick:stopPropagation>
+                                        Audio
+                                    </button>
+                                </div>
                                 <div class="vocab-en text-muted">@t.EnglishText</div>
                                 @if (!string.IsNullOrWhiteSpace(t.Example))
                                 {
@@ -89,4 +96,10 @@
 
     private static string DisplayWeek(string weekId)
         => string.IsNullOrWhiteSpace(weekId) ? "Week" : weekId.Replace('-', ' ').Replace('_', ' ');
+
+    private async Task SpeakFrench(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return;
+        await JS.InvokeVoidAsync("speakText", text, "fr-FR");
+    }
 }
