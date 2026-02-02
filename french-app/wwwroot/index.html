@@ -77,36 +77,6 @@
                 speakNow();
             }
         };
-
-        window.getAvailableSpeechLanguages = function () {
-            if (!('speechSynthesis' in window)) return Promise.resolve([]);
-
-            const collect = () => {
-                const voices = window.speechSynthesis.getVoices() || [];
-                const langs = voices.map(v => v.lang).filter(Boolean);
-                return Array.from(new Set(langs)).sort();
-            };
-
-            const initial = collect();
-            if (initial.length > 0) return Promise.resolve(initial);
-
-            return new Promise(resolve => {
-                const handler = () => {
-                    window.speechSynthesis.onvoiceschanged = null;
-                    resolve(collect());
-                };
-
-                window.speechSynthesis.onvoiceschanged = handler;
-                window.speechSynthesis.getVoices();
-
-                setTimeout(() => {
-                    if (window.speechSynthesis.onvoiceschanged === handler) {
-                        window.speechSynthesis.onvoiceschanged = null;
-                        resolve(collect());
-                    }
-                }, 1500);
-            });
-        };
     </script>
     <script src="_framework/blazor.webassembly#[.{fingerprint}].js"></script>
 </body>
