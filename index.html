@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>french-app</title>
     <base href="/french-app/" />
-    <link href="_framework/dotnet.ivjvyaas0i.js" rel="preload" as="script" fetchpriority="high" crossorigin="anonymous" integrity="sha256-XuBF2W4BpdAlrG7f9ujJ9+3bhVqTOeBSH/xLTn12/9c=" />
+    <link href="_framework/dotnet.0ci6937zrq.js" rel="preload" as="script" fetchpriority="high" crossorigin="anonymous" integrity="sha256-UGdK3AI+kbcKyZcdNKx28WQ3aqXHLaccpM2YKcpcRno=" />
     <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="css/app.css" />
     <link rel="icon" type="image/png" href="favicon.png" />
@@ -14,7 +14,7 @@
     <script type="importmap">{
   "imports": {
     "./_framework/blazor.webassembly.js": "./_framework/blazor.webassembly.66stpp682q.js",
-    "./_framework/dotnet.js": "./_framework/dotnet.ivjvyaas0i.js",
+    "./_framework/dotnet.js": "./_framework/dotnet.0ci6937zrq.js",
     "./_framework/dotnet.native.js": "./_framework/dotnet.native.pfhp029mhg.js",
     "./_framework/dotnet.runtime.js": "./_framework/dotnet.runtime.2tx45g8lli.js"
   },
@@ -22,8 +22,8 @@
   "integrity": {
     "./_framework/blazor.webassembly.66stpp682q.js": "sha256-3lCWrko3zwspV40aQhs2S/IMkRSarnHRKIdkHhuXIBA=",
     "./_framework/blazor.webassembly.js": "sha256-3lCWrko3zwspV40aQhs2S/IMkRSarnHRKIdkHhuXIBA=",
-    "./_framework/dotnet.ivjvyaas0i.js": "sha256-XuBF2W4BpdAlrG7f9ujJ9+3bhVqTOeBSH/xLTn12/9c=",
-    "./_framework/dotnet.js": "sha256-XuBF2W4BpdAlrG7f9ujJ9+3bhVqTOeBSH/xLTn12/9c=",
+    "./_framework/dotnet.0ci6937zrq.js": "sha256-UGdK3AI+kbcKyZcdNKx28WQ3aqXHLaccpM2YKcpcRno=",
+    "./_framework/dotnet.js": "sha256-UGdK3AI+kbcKyZcdNKx28WQ3aqXHLaccpM2YKcpcRno=",
     "./_framework/dotnet.native.js": "sha256-hXypU9abvf5FBbVNBG9txpDEDEGgvb97fGlmmVEJoVY=",
     "./_framework/dotnet.native.pfhp029mhg.js": "sha256-hXypU9abvf5FBbVNBG9txpDEDEGgvb97fGlmmVEJoVY=",
     "./_framework/dotnet.runtime.2tx45g8lli.js": "sha256-2lZh9yO0fnzm3Xt7yV+Kox3DH3nK7L8hDhm84VT1xco=",
@@ -66,9 +66,7 @@
                 const voices = synth.getVoices();
 
                 // Try exact match first, then language prefix (fr vs fr-FR)
-                let voice =
-                    voices.find(v => v.lang === targetLang) ||
-                    voices.find(v => v.lang && v.lang.startsWith(targetLang.split('-')[0]));
+                let voice = voices.find(v => v.voiceURI === "com.apple.voice.compact.fr-FR.Thomas");
 
                 const utterance = new SpeechSynthesisUtterance(text);
 
