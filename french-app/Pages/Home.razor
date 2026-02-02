@@ -3,6 +3,8 @@
 @using Microsoft.JSInterop
 @inject IJSRuntime JS
 
+@implements IAsyncDisposable
+
 <PageTitle>Home</PageTitle>
 
 <h1>French vocabulary</h1>
@@ -14,3 +16,93 @@
     <a class="btn btn-outline-primary" href="vocabulary/study">Start studying</a>
     <a class="btn btn-outline-secondary" href="about">About</a>
 </div>
+
+<hr />
+
+<h2 class="h4">Available voices</h2>
+
+<div class="d-flex align-items-center gap-2 flex-wrap mb-2">
+    <button class="btn btn-sm btn-outline-secondary" @onclick="LoadVoicesAsync">Refresh</button>
+    @if (!string.IsNullOrWhiteSpace(_voicesLoadMessage))
+    {
+        <span class="text-muted">@_voicesLoadMessage</span>
+    }
+</div>
+
+@if (_voicesJson is null)
+{
+    <p class="text-muted mb-0">Click Refresh to load voices.</p>
+}
+else
+{
+    <pre class="small bg-light border rounded p-2" style="max-height: 50vh; overflow: auto;">@_voicesJson</pre>
+}
+
+@code
+{
+    private IJSObjectReference? _module;
+    private string? _voicesJson;
+    private string? _voicesLoadMessage;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        _module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/voices.js");
+        await LoadVoicesAsync();
+    }
+
+    private async Task LoadVoicesAsync()
+    {
+        if (_module is null)
+        {
+            _voicesLoadMessage = "Loading JS module...";
+            return;
+        }
+
+        _voicesLoadMessage = "Loading voices...";
+        StateHasChanged();
+
+        try
+        {
+            _voicesJson = await _module.InvokeAsync<string>("getVoicesJson");
+            _voicesLoadMessage = $"Loaded {CountVoices(_voicesJson)} voice(s).";
+        }
+        catch (JSException ex)
+        {
+            _voicesLoadMessage = "Failed to load voices.";
+            _voicesJson = ex.Message;
+        }
+    }
+
+    private static int CountVoices(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return 0;
+        }
+
+        try
+        {
+            using var doc = System.Text.Json.JsonDocument.Parse(json);
+            return doc.RootElement.ValueKind == System.Text.Json.JsonValueKind.Array
+                ? doc.RootElement.GetArrayLength()
+                : 0;
+        }
+        catch
+        {
+            return 0;
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_module is not null)
+        {
+            await _module.DisposeAsync();
+        }
+    }
+}
