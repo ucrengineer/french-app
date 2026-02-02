@@ -32,18 +32,51 @@
     <script>
         window.speakText = function (text, lang) {
             if (!text) return;
+
             if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') {
                 console.warn('Speech synthesis is not supported in this browser.');
                 return;
             }
 
-            // Cancel any in-progress speech so repeated clicks behave predictably.
-            window.speechSynthesis.cancel();
+            const synth = window.speechSynthesis;
+            const targetLang = lang || 'fr-FR';
 
-            var utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = lang || 'fr-FR';
-            window.speechSynthesis.speak(utterance);
-        }
+            function speakNow() {
+                // Cancel any in-progress speech so repeated clicks behave predictably
+                synth.cancel();
+
+                const voices = synth.getVoices();
+
+                // Try exact match first, then language prefix (fr vs fr-FR)
+                let voice =
+                    voices.find(v => v.lang === targetLang) ||
+                    voices.find(v => v.lang && v.lang.startsWith(targetLang.split('-')[0]));
+
+                const utterance = new SpeechSynthesisUtterance(text);
+
+                if (voice) {
+                    utterance.voice = voice;
+                    utterance.lang = voice.lang;
+                } else {
+                    // fallback
+                    utterance.lang = targetLang;
+                    console.warn("No matching voice found for", targetLang);
+                }
+
+                synth.speak(utterance);
+            }
+
+            // Mobile browsers load voices asynchronously
+            if (synth.getVoices().length === 0) {
+                const handler = function () {
+                    synth.removeEventListener('voiceschanged', handler);
+                    speakNow();
+                };
+                synth.addEventListener('voiceschanged', handler);
+            } else {
+                speakNow();
+            }
+        };
 
         window.getAvailableSpeechLanguages = function () {
             if (!('speechSynthesis' in window)) return Promise.resolve([]);
