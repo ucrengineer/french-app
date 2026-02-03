@@ -1,0 +1,240 @@
+@page "/vocabulary/match/{WeekId}"
+@using french_app.Models
+@using french_app.Services
+@using Microsoft.JSInterop
+@inject VocabularyService Vocab
+@inject IJSRuntime JS
+
+<PageTitle>Match Game</PageTitle>
+
+<div class="vocab-page">
+    <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+        <div>
+            <h1 class="m-0">Match</h1>
+            <div class="text-muted">@TitleSuffix</div>
+        </div>
+        <div class="d-flex gap-2">
+            <a class="btn btn-outline-secondary" href="/vocabulary/match">Change</a>
+            <button class="btn btn-outline-primary" @onclick="ResetGame" disabled="@(_terms.Count == 0)">Reset</button>
+        </div>
+    </div>
+
+    @if (_loading)
+    {
+        <div class="alert alert-info mt-3">Loading terms…</div>
+    }
+    else if (!string.IsNullOrWhiteSpace(_error))
+    {
+        <div class="alert alert-danger mt-3">@_error</div>
+    }
+    else if (_terms.Count == 0)
+    {
+        <div class="alert alert-warning mt-3">No terms to match.</div>
+    }
+    else
+    {
+        <div class="row g-3 mt-3">
+            <div class="col-6">
+                <h5>French</h5>
+                @foreach (var pair in _currentFrench)
+                {
+                    <div class="card match-card @(pair.FrenchText == _selectedFrench ? "selected" : "")"
+                         @onclick="() => SelectFrench(pair.FrenchText)">
+                        @pair.FrenchText
+                    </div>
+                }
+            </div>
+            <div class="col-6">
+                <h5>English</h5>
+                @foreach (var eng in _currentEnglish)
+                {
+                    <div class="card match-card @(eng == _selectedEnglish ? "selected" : "")"
+                         @onclick="() => SelectEnglish(eng)">
+                        @eng
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="d-flex gap-2 mt-4">
+            <button class="btn btn-outline-primary flex-fill" @onclick="PrevPage" disabled="@(_pageIndex == 0)">Prev</button>
+            <button class="btn btn-outline-primary flex-fill" @onclick="NextPage" disabled="@(_pageIndex >= _totalPages - 1)">Next</button>
+        </div>
+    }
+</div>
+<!-- Bootstrap Toast -->
+<div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3">
+    <div id="matchToast" class="toast text-white" role="alert" data-bs-delay="1800">
+        <div class="toast-body text-center" id="matchToastBody"></div>
+    </div>
+</div>
+
+<style>
+    .match-card {
+        padding: 14px;
+        margin-bottom: 10px;
+        cursor: pointer;
+        border-radius: 12px;
+        border: 1px solid #e0e0e0;
+        transition: .15s;
+    }
+
+        .match-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,.08);
+        }
+
+    .selected {
+        background: #e3f2fd;
+        border-color: #0d6efd;
+    }
+</style>
+@code {
+    [Parameter] public string WeekId { get; set; } = "all";
+
+    private bool _loading = true;
+    private string? _error;
+    private readonly List<VocabularyTerm> _terms = new();
+    private int _pageIndex = 0;
+    private int _pageSize = 10;
+    private int _totalPages = 1;
+    private List<VocabularyTerm> _currentFrench = new();
+    private List<string> _currentEnglish = new();
+    private string? _selectedFrench;
+    private string? _selectedEnglish;
+    private Random _rng = new();
+
+    private string TitleSuffix => WeekId.Equals("all", StringComparison.OrdinalIgnoreCase)
+        ? "All weeks"
+        : DisplayWeek(WeekId);
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _loading = true;
+        _error = null;
+        _terms.Clear();
+        _pageIndex = 0;
+        _selectedFrench = null;
+        _selectedEnglish = null;
+        try
+        {
+            if (WeekId.Equals("all", StringComparison.OrdinalIgnoreCase))
+            {
+                var weeks = await Vocab.GetAvailableWeeksAsync();
+                foreach (var w in weeks)
+                {
+                    var pack = await Vocab.LoadWeekAsync(w);
+                    if (pack is not null)
+                    {
+                        _terms.AddRange(pack.Terms);
+                    }
+                }
+            }
+            else
+            {
+                var pack = await Vocab.LoadWeekAsync(WeekId);
+                if (pack is not null)
+                {
+                    _terms.AddRange(pack.Terms);
+                }
+            }
+            ShuffleTerms();
+            RecalcPages();
+            UpdatePage();
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void ShuffleTerms()
+    {
+        var n = _terms.Count;
+        for (var i = n - 1; i > 0; i--)
+        {
+            var j = _rng.Next(i + 1);
+            (_terms[i], _terms[j]) = (_terms[j], _terms[i]);
+        }
+    }
+
+    private void RecalcPages()
+    {
+        _totalPages = Math.Max(1, (_terms.Count + _pageSize - 1) / _pageSize);
+        if (_pageIndex >= _totalPages) _pageIndex = _totalPages - 1;
+    }
+
+    private void UpdatePage()
+    {
+        var page = _terms
+            .Skip(_pageIndex * _pageSize)
+            .Take(_pageSize)
+            .ToList();
+        _currentFrench = page;
+        _currentEnglish = page
+            .Select(x => x.EnglishText)
+            .OrderBy(_ => _rng.Next())
+            .ToList();
+    }
+
+    private async Task SelectFrench(string f)
+    {
+        _selectedFrench = f;
+        await TryMatch();
+    }
+
+    private async Task SelectEnglish(string e)
+    {
+        _selectedEnglish = e;
+        await TryMatch();
+    }
+
+    private async Task TryMatch()
+    {
+        if (_selectedFrench == null || _selectedEnglish == null) return;
+        var pair = _currentFrench.FirstOrDefault(p => p.FrenchText == _selectedFrench);
+        bool correct = pair?.EnglishText == _selectedEnglish;
+        await JS.InvokeVoidAsync("showMatchToast", correct ? "Correct!" : "Incorrect — try again", correct);
+        if (correct && pair != null)
+        {
+            _terms.Remove(pair);
+            RecalcPages();
+            UpdatePage();
+        }
+        _selectedFrench = null;
+        _selectedEnglish = null;
+    }
+
+    private void ResetGame()
+    {
+        _pageIndex = 0;
+        _selectedFrench = null;
+        _selectedEnglish = null;
+        ShuffleTerms();
+        UpdatePage();
+    }
+
+    private void NextPage()
+    {
+        if (_pageIndex < _totalPages - 1)
+        {
+            _pageIndex++;
+            UpdatePage();
+        }
+    }
+
+    private void PrevPage()
+    {
+        if (_pageIndex > 0)
+        {
+            _pageIndex--;
+            UpdatePage();
+        }
+    }
+
+    private static string DisplayWeek(string weekId)
+        => string.IsNullOrWhiteSpace(weekId) ? "Week" : weekId.Replace('-', ' ').Replace('_', ' ');
+}
