@@ -1,0 +1,234 @@
+@page "/vocabulary/match"
+@using System.Text.Json
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<div class="container py-4">
+
+    <h2 class="text-center mb-4">French ↔ English Match</h2>
+
+    @if (_loading)
+    {
+        <p>Loading vocabulary...</p>
+    }
+    else if (_error != null)
+    {
+        <div class="alert alert-danger">@_error</div>
+    }
+    else
+    {
+        <div class="row g-3">
+            <div class="col-md-6">
+                <h5>French</h5>
+                @foreach (var pair in _currentFrench)
+                {
+                    <div class="card match-card @(pair.French == _selectedFrench ? "selected" : "")"
+                         @onclick="() => SelectFrench(pair.French)">
+                        @pair.French
+                    </div>
+                }
+            </div>
+
+            <div class="col-md-6">
+                <h5>English</h5>
+                @foreach (var eng in _currentEnglish)
+                {
+                    <div class="card match-card @(eng == _selectedEnglish ? "selected" : "")"
+                         @onclick="() => SelectEnglish(eng)">
+                        @eng
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="d-flex gap-2 mt-4">
+            <button class="btn btn-secondary flex-fill" @onclick="ResetGame">Reset</button>
+            <button class="btn btn-outline-primary flex-fill" @onclick="PrevPage" disabled="@(_pageIndex == 0)">Prev</button>
+            <button class="btn btn-outline-primary flex-fill" @onclick="NextPage" disabled="@(_pageIndex >= _totalPages - 1)">Next</button>
+        </div>
+    }
+
+</div>
+
+<!-- Bootstrap Toast -->
+<div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3">
+    <div id="matchToast" class="toast text-white" role="alert" data-bs-delay="1800">
+        <div class="toast-body text-center" id="matchToastBody"></div>
+    </div>
+</div>
+
+<style>
+    .match-card {
+        padding: 14px;
+        margin-bottom: 10px;
+        cursor: pointer;
+        border-radius: 12px;
+        border: 1px solid #e0e0e0;
+        transition: .15s;
+    }
+
+        .match-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,.08);
+        }
+
+    .selected {
+        background: #e3f2fd;
+        border-color: #0d6efd;
+    }
+</style>
+
+
+@code {
+
+    class VocabPair
+    {
+        public string French { get; set; } = "";
+        public string English { get; set; } = "";
+    }
+
+    List<VocabPair>? _pairs;
+    List<VocabPair> _currentFrench = new();
+    List<string> _currentEnglish = new();
+
+    string? _selectedFrench;
+    string? _selectedEnglish;
+
+    bool _loading = true;
+    string? _error;
+
+    int _pageIndex = 0;
+    int _pageSize = 10;
+    int _totalPages = 1;
+
+    Random _rng = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    async Task LoadData()
+    {
+        try
+        {
+            var json = await LoadVocabJsonAsync("/files/week1/vocab.json");
+
+            var doc = JsonDocument.Parse(json);
+            _pairs = new();
+
+            foreach (var item in doc.RootElement.EnumerateArray())
+            {
+                _pairs.Add(new VocabPair
+                {
+                    French = item.GetProperty("french").GetString() ?? "",
+                    English = item.GetProperty("english").GetString() ?? ""
+                });
+            }
+
+            _pageIndex = 0;
+            RecalcPages();
+            UpdatePage();
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+
+        _loading = false;
+    }
+
+    async Task<string> LoadVocabJsonAsync(string path)
+    {
+        using var http = new HttpClient { BaseAddress = new Uri(Navigation.BaseUri) };
+        return await http.GetStringAsync(path);
+    }
+
+    void RecalcPages()
+    {
+        if (_pairs == null) return;
+        _totalPages = Math.Max(1, (_pairs.Count + _pageSize - 1) / _pageSize);
+        if (_pageIndex >= _totalPages) _pageIndex = _totalPages - 1;
+    }
+
+    void UpdatePage()
+    {
+        if (_pairs == null) return;
+
+        var page = _pairs
+            .Skip(_pageIndex * _pageSize)
+            .Take(_pageSize)
+            .ToList();
+
+        _currentFrench = page;
+        _currentEnglish = page
+            .Select(x => x.English)
+            .OrderBy(_ => _rng.Next())
+            .ToList();
+    }
+
+    async Task SelectFrench(string f)
+    {
+        _selectedFrench = f;
+        await TryMatch();
+    }
+
+    async Task SelectEnglish(string e)
+    {
+        _selectedEnglish = e;
+        await TryMatch();
+    }
+
+    async Task TryMatch()
+    {
+        if (_selectedFrench == null || _selectedEnglish == null || _pairs == null)
+            return;
+
+        var pair = _pairs.FirstOrDefault(p => p.French == _selectedFrench);
+        bool correct = pair?.English == _selectedEnglish;
+
+        await ShowToast(correct);
+
+        if (correct && pair != null)
+        {
+            _pairs.Remove(pair);
+            RecalcPages();
+            UpdatePage();
+        }
+
+        _selectedFrench = null;
+        _selectedEnglish = null;
+    }
+
+    async Task ShowToast(bool success)
+    {
+        await JS.InvokeVoidAsync("showMatchToast",
+            success ? "Correct!" : "Incorrect — try again",
+            success);
+    }
+
+    async Task ResetGame()
+    {
+        _loading = true;
+        await LoadData();
+    }
+
+    void NextPage()
+    {
+        if (_pageIndex < _totalPages - 1)
+        {
+            _pageIndex++;
+            UpdatePage();
+        }
+    }
+
+    void PrevPage()
+    {
+        if (_pageIndex > 0)
+        {
+            _pageIndex--;
+            UpdatePage();
+        }
+    }
+
+}

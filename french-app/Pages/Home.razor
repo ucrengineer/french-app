@@ -14,12 +14,13 @@
 <div class="d-flex gap-2 flex-wrap">
     <a class="btn btn-primary" href="vocabulary">Browse weeks</a>
     <a class="btn btn-outline-primary" href="vocabulary/study">Start studying</a>
+    <a class="btn btn-outline-primary" href="vocabulary/match">Start matching</a>
     <a class="btn btn-outline-secondary" href="about">About</a>
 </div>
 
 <hr />
 
-<h2 class="h4">Available voices</h2>
+@* <h2 class="h4">Available voices</h2>
 
 <div class="d-flex align-items-center gap-2 flex-wrap mb-2">
     <button class="btn btn-sm btn-outline-secondary" @onclick="LoadVoicesAsync">Refresh</button>
@@ -37,7 +38,7 @@ else
 {
     <pre class="small bg-light border rounded p-2" style="max-height: 50vh; overflow: auto;">@_voicesJson</pre>
 }
-
+ *@
 @code
 {
     private IJSObjectReference? _module;
