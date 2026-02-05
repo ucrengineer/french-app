@@ -178,6 +178,7 @@
                 .FirstOrDefault(v =>  v.VoiceUri == "com.apple.voice.compact.fr - FR.Thomas")?.VoiceUri
                 ?? _voices.FirstOrDefault()?.VoiceUri;
 
+
             _voicesLoadMessage = $"Loaded {_voices.Count} voice(s).";
         }
         catch (JSException ex)
@@ -185,6 +186,7 @@
             _voicesLoadMessage = "Failed to load voices.";
             Console.WriteLine(ex.Message);
         }
+        await OnVoiceChanged();
 
         StateHasChanged();
     }
