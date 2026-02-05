@@ -33,6 +33,8 @@
     }
     else
     {
+        @($"Group {_pageIndex} / {_totalPages}")
+
         <div class="row g-3 mt-3">
             <div class="col-6">
                 <h5>French</h5>
@@ -99,6 +101,7 @@
     private int _totalPages = 1;
     private List<VocabularyTerm> _currentFrench = new();
     private List<string> _currentEnglish = new();
+    private HashSet<string> _matchedFrench = new(StringComparer.Ordinal);
     private string? _selectedFrench;
     private string? _selectedEnglish;
     private Random _rng = new();
@@ -113,6 +116,7 @@
         _error = null;
         _terms.Clear();
         _pageIndex = 0;
+        _matchedFrench.Clear();
         _selectedFrench = null;
         _selectedEnglish = null;
         try
@@ -169,10 +173,14 @@
 
     private void UpdatePage()
     {
+        // Each page is a fixed batch of up to 10 pairs.
+        // Correct matches are tracked and removed from display without pulling in a replacement.
+        _matchedFrench.Clear();
         var page = _terms
             .Skip(_pageIndex * _pageSize)
             .Take(_pageSize)
             .ToList();
+
         _currentFrench = page;
         _currentEnglish = page
             .Select(x => x.EnglishText)
@@ -183,6 +191,7 @@
     private async Task SelectFrench(string f)
     {
         _selectedFrench = f;
+        await SpeakCurrentFrench(_selectedFrench);
         await TryMatch();
     }
 
@@ -195,15 +204,19 @@
     private async Task TryMatch()
     {
         if (_selectedFrench == null || _selectedEnglish == null) return;
+
         var pair = _currentFrench.FirstOrDefault(p => p.FrenchText == _selectedFrench);
-        bool correct = pair?.EnglishText == _selectedEnglish;
+        bool correct = pair is not null && pair.EnglishText == _selectedEnglish;
         await JS.InvokeVoidAsync("showMatchToast", correct ? "Correct!" : "Incorrect — try again", correct);
-        if (correct && pair != null)
+
+        if (correct && pair is not null)
         {
-            _terms.Remove(pair);
-            RecalcPages();
-            UpdatePage();
+            // Do not add a replacement term mid-batch; just mark as matched and remove from display.
+            _matchedFrench.Add(pair.FrenchText);
+            _currentFrench.Remove(pair);
+            _currentEnglish.Remove(_selectedEnglish);
         }
+
         _selectedFrench = null;
         _selectedEnglish = null;
     }
@@ -211,9 +224,11 @@
     private void ResetGame()
     {
         _pageIndex = 0;
+        _matchedFrench.Clear();
         _selectedFrench = null;
         _selectedEnglish = null;
         ShuffleTerms();
+        RecalcPages();
         UpdatePage();
     }
 
@@ -222,6 +237,8 @@
         if (_pageIndex < _totalPages - 1)
         {
             _pageIndex++;
+            _selectedFrench = null;
+            _selectedEnglish = null;
             UpdatePage();
         }
     }
@@ -231,10 +248,18 @@
         if (_pageIndex > 0)
         {
             _pageIndex--;
+            _selectedFrench = null;
+            _selectedEnglish = null;
             UpdatePage();
         }
     }
 
+    private async Task SpeakCurrentFrench(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return;
+
+        await JS.InvokeVoidAsync("speakText", text, "fr-FR");
+    }
     private static string DisplayWeek(string weekId)
         => string.IsNullOrWhiteSpace(weekId) ? "Week" : weekId.Replace('-', ' ').Replace('_', ' ');
 }
