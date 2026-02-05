@@ -175,8 +175,8 @@
 
             // auto-select first French voice or default voice
             _selectedVoiceUri = _voices
-                .FirstOrDefault(v => v.Lang.StartsWith("fr") && v.Default)?.VoiceUri
-                ?? _voices.FirstOrDefault(v => v.Lang.StartsWith("fr"))?.VoiceUri;
+                .FirstOrDefault(v =>  v.VoiceUri == "com.apple.voice.compact.fr - FR.Thomas")?.VoiceUri
+                ?? _voices.FirstOrDefault()?.VoiceUri;
 
             _voicesLoadMessage = $"Loaded {_voices.Count} voice(s).";
         }
