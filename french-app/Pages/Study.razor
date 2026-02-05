@@ -5,43 +5,106 @@
 
 <PageTitle>Study</PageTitle>
 
-<div class="vocab-page">
-    <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
-        <h1 class="m-0">Study</h1>
-        <a class="btn btn-outline-secondary" href="vocabulary">Weeks</a>
+<div class="container-fluid">
+
+    <!-- HEADER -->
+    <div class="p-4 p-md-5 rounded-4 shadow-sm mb-4 text-light"
+         style="background: linear-gradient(135deg,#1b2250,#4f5bd5); border:1px solid rgba(255,255,255,.08);">
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h1 class="mb-1">📖 Study Flashcards</h1>
+                <div class="opacity-75">
+                    Choose a week or study everything together
+                </div>
+            </div>
+
+            <a class="btn btn-outline-light" href="vocabulary">
+                ← Weeks
+            </a>
+        </div>
     </div>
 
-    <p class="text-muted mt-2">Choose a week (or study all).</p>
-
+    <!-- STATES -->
     @if (_loading)
     {
-        <div class="alert alert-info">Loading…</div>
+        <div class="card border-0 shadow text-light"
+             style="background:#141a3d;">
+            <div class="card-body d-flex align-items-center gap-3">
+                <div class="spinner-border"></div>
+                <div>Loading vocabulary weeks…</div>
+            </div>
+        </div>
     }
     else if (!string.IsNullOrWhiteSpace(_error))
     {
-        <div class="alert alert-danger">@_error</div>
+        <div class="alert alert-danger shadow-sm">
+            @_error
+        </div>
     }
     else
     {
-        <div class="vocab-week-grid">
-            <a class="card vocab-week-card" href="vocabulary/study/all">
-                <div class="card-body">
-                    <div class="h5 mb-1">All weeks</div>
-                    <div class="text-muted small">Mix everything</div>
-                </div>
-            </a>
+        <!-- GRID -->
+        <div class="row g-4">
 
-            @foreach (var w in _weeks)
-            {
-                <a class="card vocab-week-card" href="vocabulary/study/@w">
-                    <div class="card-body">
-                        <div class="h5 mb-1">@DisplayWeek(w)</div>
-                        <div class="text-muted small">Flashcards</div>
+            <!-- ALL WEEKS -->
+            <div class="col-12 col-md-6 col-xl-4">
+                <a class="text-decoration-none"
+                   href="vocabulary/study/all">
+
+                    <div class="card h-100 border-0 shadow hover-card text-light"
+                         style="background: linear-gradient(180deg,#1b2250,#27318a);">
+
+                        <div class="card-body">
+                            <div class="fs-2 mb-2">🔥</div>
+                            <h4 class="mb-1">All Weeks</h4>
+                            <div class="opacity-75">
+                                Mixed master deck
+                            </div>
+                        </div>
+
+                        <div class="card-footer border-0 bg-transparent opacity-75 small">
+                            @_weeks.Count week sets included
+                        </div>
+
                     </div>
                 </a>
+            </div>
+
+            <!-- WEEK CARDS -->
+            @foreach (var w in _weeks)
+            {
+                <div class="col-12 col-md-6 col-xl-4">
+                    <a class="text-decoration-none"
+                       href="vocabulary/study/@w">
+
+                        <div class="card h-100 border-0 shadow hover-card text-light"
+                             style="background: linear-gradient(180deg,#141a3d,#1b2250); border:1px solid rgba(255,255,255,.06);">
+
+                            <div class="card-body">
+                                <div class="fs-3 mb-2">🗂️</div>
+
+                                <h5 class="mb-1">
+                                    @DisplayWeek(w)
+                                </h5>
+
+                                <div class="opacity-75 small">
+                                    Flashcard deck
+                                </div>
+                            </div>
+
+                            <div class="card-footer border-0 bg-transparent small opacity-50">
+                                Open study mode →
+                            </div>
+
+                        </div>
+                    </a>
+                </div>
             }
+
         </div>
     }
+
 </div>
 
 @code {
@@ -66,5 +129,7 @@
     }
 
     private static string DisplayWeek(string weekId)
-        => string.IsNullOrWhiteSpace(weekId) ? "Week" : weekId.Replace('-', ' ').Replace('_', ' ');
+        => string.IsNullOrWhiteSpace(weekId)
+            ? "Week"
+            : weekId.Replace('-', ' ').Replace('_', ' ');
 }

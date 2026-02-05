@@ -4,51 +4,85 @@
 
 <PageTitle>Vocabulary</PageTitle>
 
-<div class="vocab-page">
-    <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
-        <h1 class="m-0">Vocabulary</h1>
-        <a class="btn btn-outline-primary" href="vocabulary/study">Study</a>
+<div class="container-fluid">
+
+    <!-- HEADER -->
+    <div class="p-4 p-md-5 rounded-4 shadow-sm mb-4 text-light"
+         style="background: linear-gradient(135deg,#141a3d,#4f5bd5); border:1px solid rgba(255,255,255,.08);">
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h1 class="mb-1">📚 Vocabulary Packs</h1>
+                <div class="opacity-75">
+                    Browse weekly term sets
+                </div>
+            </div>
+
+            <a class="btn btn-light" href="vocabulary/study">
+                Study Mode →
+            </a>
+        </div>
     </div>
 
-    <p class="text-muted mt-2 mb-3">Pick a week to view terms or start studying.</p>
-
+    <!-- STATES -->
     @if (_loading)
     {
-        <div class="alert alert-info">Loading weeks…</div>
+        <div class="card border-0 shadow text-light" style="background:#141a3d;">
+            <div class="card-body d-flex gap-3 align-items-center">
+                <div class="spinner-border"></div>
+                <div>Loading weeks…</div>
+            </div>
+        </div>
     }
     else if (!string.IsNullOrWhiteSpace(_error))
     {
-        <div class="alert alert-danger">
+        <div class="alert alert-danger shadow-sm">
             @_error
-            <div class="small mt-2">Expected `wwwroot/files/index.json` containing a JSON array of week folder names (e.g. `["week1","week2"]`).</div>
+            <div class="small mt-2">
+                Expected <code>wwwroot/files/index.json</code>
+            </div>
         </div>
     }
     else if (_weeks.Count == 0)
     {
-        <div class="alert alert-warning">
+        <div class="alert alert-warning shadow-sm">
             No weeks found.
-            <div class="small mt-2">Add `wwwroot/files/index.json` and week folders like `wwwroot/files/week1/vocab.json`.</div>
         </div>
     }
     else
     {
-        <div class="vocab-week-grid">
+        <!-- GRID -->
+        <div class="row g-4">
             @foreach (var w in _weeks)
             {
-                <a class="card vocab-week-card" href="vocabulary/@w">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center justify-content-between">
-                            <div>
-                                <div class="h5 mb-1">@DisplayWeek(w)</div>
-                                <div class="text-muted small">Tap to open</div>
+                <div class="col-12 col-md-6 col-xl-4">
+                    <a class="text-decoration-none"
+                       href="vocabulary/@w">
+
+                        <div class="card h-100 border-0 shadow hover-card text-light"
+                             style="background: linear-gradient(180deg,#141a3d,#1b2250); border:1px solid rgba(255,255,255,.06);">
+
+                            <div class="card-body">
+                                <div class="fs-3 mb-2">🗂️</div>
+
+                                <h5 class="mb-1">@DisplayWeek(w)</h5>
+
+                                <div class="opacity-75 small">
+                                    View vocabulary
+                                </div>
                             </div>
-                            <span class="badge text-bg-primary">Week</span>
+
+                            <div class="card-footer bg-transparent border-0 small opacity-50">
+                                Open →
+                            </div>
+
                         </div>
-                    </div>
-                </a>
+                    </a>
+                </div>
             }
         </div>
     }
+
 </div>
 
 @code {
@@ -58,20 +92,13 @@
 
     protected override async Task OnInitializedAsync()
     {
-        try
-        {
-            _weeks = (await Vocab.GetAvailableWeeksAsync()).ToList();
-        }
-        catch (Exception ex)
-        {
-            _error = ex.Message;
-        }
-        finally
-        {
-            _loading = false;
-        }
+        try { _weeks = (await Vocab.GetAvailableWeeksAsync()).ToList(); }
+        catch (Exception ex) { _error = ex.Message; }
+        finally { _loading = false; }
     }
 
     private static string DisplayWeek(string weekId)
-        => string.IsNullOrWhiteSpace(weekId) ? "Week" : weekId.Replace('-', ' ').Replace('_', ' ');
+        => string.IsNullOrWhiteSpace(weekId)
+            ? "Week"
+            : weekId.Replace('-', ' ').Replace('_', ' ');
 }

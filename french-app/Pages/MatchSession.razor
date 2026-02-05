@@ -13,6 +13,10 @@
             <h1 class="m-0">Match</h1>
             <div class="text-muted">@TitleSuffix</div>
         </div>
+        <div class="text-end">
+            <div class="fw-semibold">Points: @_points</div>
+            <div class="text-muted small">Streak: @_streak</div>
+        </div>
         <div class="d-flex gap-2">
             <a class="btn btn-outline-secondary" href="/vocabulary/match">Change</a>
             <button class="btn btn-outline-primary" @onclick="ResetGame" disabled="@(_terms.Count == 0)">Reset</button>
@@ -33,7 +37,7 @@
     }
     else
     {
-        @($"Group {_pageIndex} / {_totalPages}")
+        @($"Group {_pageIndex + 1} / {_totalPages}")
 
         <div class="row g-3 mt-3">
             <div class="col-6">
@@ -105,6 +109,10 @@
     private string? _selectedFrench;
     private string? _selectedEnglish;
     private Random _rng = new();
+    private int _points = 0;
+    private int _streak = 0;
+    private int _groupMaxScore = 0;
+    private int _groupScore = 0;
 
     private string TitleSuffix => WeekId.Equals("all", StringComparison.OrdinalIgnoreCase)
         ? "All weeks"
@@ -119,6 +127,10 @@
         _matchedFrench.Clear();
         _selectedFrench = null;
         _selectedEnglish = null;
+        _points = 0;
+        _streak = 0;
+        _groupMaxScore = 0;
+        _groupScore = 0;
         try
         {
             if (WeekId.Equals("all", StringComparison.OrdinalIgnoreCase))
@@ -176,10 +188,20 @@
         // Each page is a fixed batch of up to 10 pairs.
         // Correct matches are tracked and removed from display without pulling in a replacement.
         _matchedFrench.Clear();
+        _groupScore = 0;
         var page = _terms
             .Skip(_pageIndex * _pageSize)
             .Take(_pageSize)
             .ToList();
+
+        // Max score for a group assumes a perfect run (all correct, no penalties).
+        // With current scoring: base 10 + streak bonus (0,2,4...) capped at 20.
+        // For up to 10 items, cap doesn't apply (max streak bonus hits 18).
+        _groupMaxScore = 0;
+        for (var i = 1; i <= page.Count; i++)
+        {
+            _groupMaxScore += 10 + Math.Min(20, (i - 1) * 2);
+        }
 
         _currentFrench = page;
         _currentEnglish = page
@@ -211,12 +233,28 @@
 
         if (correct && pair is not null)
         {
+            _streak++;
+            var earned = 10 + Math.Min(20, (_streak - 1) * 2);
+            _points += earned;
+            _groupScore += earned;
+
             // Do not add a replacement term mid-batch; just mark as matched and remove from display.
             _matchedFrench.Add(pair.FrenchText);
             _currentFrench.Remove(pair);
             _currentEnglish.Remove(_selectedEnglish);
         }
+        else
+        {
+            _streak = 0;
+            _points = Math.Max(0, _points - 2);
+            _groupScore = Math.Max(0, _groupScore - 2);
+        }
 
+        var perfectGroup = _currentFrench.Count == 0 && _groupScore >= _groupMaxScore && _groupMaxScore > 0;
+        if (perfectGroup)
+        {
+            await JS.InvokeVoidAsync("showConfettiBurst");
+        }
         _selectedFrench = null;
         _selectedEnglish = null;
     }
@@ -227,6 +265,10 @@
         _matchedFrench.Clear();
         _selectedFrench = null;
         _selectedEnglish = null;
+        _points = 0;
+        _streak = 0;
+        _groupMaxScore = 0;
+        _groupScore = 0;
         ShuffleTerms();
         RecalcPages();
         UpdatePage();
@@ -236,12 +278,14 @@
     {
         if (_pageIndex < _totalPages - 1)
         {
+
             _pageIndex++;
             _selectedFrench = null;
             _selectedEnglish = null;
             UpdatePage();
         }
     }
+
 
     private void PrevPage()
     {
