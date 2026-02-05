@@ -53,7 +53,9 @@
                     <div class="study-front" hidden="@_showAnswer">
                         <div class="study-lang">FR</div>
                         <div class="d-flex align-items-start justify-content-between gap-2">
-                            <div class="study-text flex-grow-1">@Current.FrenchText</div>
+                            <button class="btn btn-link p-0 text-decoration-none text-start study-text flex-grow-1" title="Tap to speak" @onclick="SpeakCurrentFrench" @onclick:stopPropagation>
+                                @Current.FrenchText
+                            </button>
                             <button class="btn btn-outline-secondary btn-sm" title="Play audio" @onclick="SpeakCurrentFrench" @onclick:stopPropagation>
                                 Audio
                             </button>

@@ -1,109 +1,201 @@
 ﻿@page "/"
 
 @using Microsoft.JSInterop
+@using System.Text.Json
+@using french_app.Models
 @inject IJSRuntime JS
-
-@implements IAsyncDisposable
 
 <PageTitle>Home</PageTitle>
 
-<h1>French vocabulary</h1>
+<!-- HERO -->
+<div class="p-5 rounded-4 shadow-sm mb-4 text-light"
+     style="background: linear-gradient(135deg,#1b2250,#4f5bd5); border:1px solid rgba(255,255,255,.08);">
+    <div class="row align-items-center">
+        <div class="col-lg-8">
+            <h1 class="display-5 fw-bold mb-2">🇫🇷 French Vocabulary Study</h1>
+            <p class="lead mb-3 text-light opacity-75">
+                Flashcards • Matching Games • Weekly Vocabulary Packs
+            </p>
 
-<p class="text-muted">Load your weekly JSON vocabulary lists and study with flashcards.</p>
+            <div class="d-flex gap-2 flex-wrap">
+                <a class="btn btn-light btn-lg" href="vocabulary/study">
+                    Start Studying
+                </a>
+                <a class="btn btn-outline-light btn-lg" href="vocabulary">
+                    Browse Weeks
+                </a>
+            </div>
 
-<div class="d-flex gap-2 flex-wrap">
-    <a class="btn btn-primary" href="vocabulary">Browse weeks</a>
-    <a class="btn btn-outline-primary" href="vocabulary/study">Start studying</a>
-    <a class="btn btn-outline-primary" href="vocabulary/match">Start matching</a>
-    <a class="btn btn-outline-secondary" href="about">About</a>
+            <p class="mt-3 mb-0 small opacity-75">
+                Built for <strong>FREN 102-601</strong> — Southwestern Community College
+            </p>
+        </div>
+    </div>
 </div>
 
-<hr />
+<!-- FEATURE CARDS -->
+<div class="row g-4">
 
-@* <h2 class="h4">Available voices</h2>
+    <div class="col-md-4">
+        <div class="card h-100 border-0 shadow hover-card text-light"
+             style="background: linear-gradient(180deg,#141a3d,#1b2250); border:1px solid rgba(255,255,255,.08);">
+            <div class="card-body">
+                <div class="fs-2 mb-2">📚</div>
+                <h5 class="fw-semibold">Browse Weeks</h5>
+                <p class="opacity-75">
+                    View all vocabulary packs and open a week to explore terms.
+                </p>
+                <a class="btn btn-sm"
+                   style="background:#4f5bd5;color:white;border:none;"
+                   href="vocabulary">
+                    Open Weeks
+                </a>
+            </div>
+        </div>
+    </div>
 
-<div class="d-flex align-items-center gap-2 flex-wrap mb-2">
-    <button class="btn btn-sm btn-outline-secondary" @onclick="LoadVoicesAsync">Refresh</button>
-    @if (!string.IsNullOrWhiteSpace(_voicesLoadMessage))
+    <div class="col-md-4">
+        <div class="card h-100 border-0 shadow hover-card text-light"
+             style="background: linear-gradient(180deg,#141a3d,#1b2250); border:1px solid rgba(255,255,255,.08);">
+            <div class="card-body">
+                <div class="fs-2 mb-2">🃏</div>
+                <h5 class="fw-semibold">Flashcards</h5>
+                <p class="opacity-75">
+                    Study one week or combine all weeks into one deck.
+                </p>
+                <a class="btn btn-sm"
+                   style="background:#4f5bd5;color:white;border:none;"
+                   href="vocabulary/study">
+                    Start Flashcards
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100 border-0 shadow hover-card text-light"
+             style="background: linear-gradient(180deg,#141a3d,#1b2250); border:1px solid rgba(255,255,255,.08);">
+            <div class="card-body">
+                <div class="fs-2 mb-2">🎯</div>
+                <h5 class="fw-semibold">Match Game</h5>
+                <p class="opacity-75">
+                    Practice translations with timed matching rounds.
+                </p>
+                <a class="btn btn-sm"
+                   style="background:#4f5bd5;color:white;border:none;"
+                   href="vocabulary/match">
+                    Play Game
+                </a>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- VOICES -->
+<div class="collapse show mt-3" id="voicesPanel">
+
+    <div class="d-flex gap-2 mb-3">
+        <button class="btn btn-sm"
+                style="background:#4f5bd5;color:white;border:none;"
+                @onclick="LoadVoicesAsync">
+            Refresh Voices
+        </button>
+
+        @if (!string.IsNullOrWhiteSpace(_voicesLoadMessage))
+        {
+            <span class="badge bg-secondary">
+                @_voicesLoadMessage
+            </span>
+        }
+    </div>
+
+    @if (_voices is null || _voices.Count == 0)
     {
-        <span class="text-muted">@_voicesLoadMessage</span>
+        <div class="opacity-75">No voices loaded.</div>
     }
+    else
+    {
+        <div class="mb-3">
+            <label class="form-label">Select Voice</label>
+
+            <select class="form-select bg-dark text-light border-secondary"
+                    @bind="_selectedVoiceUri"
+                    @bind:after="OnVoiceChanged">
+
+                @foreach (var v in _voices.Where(v => v.Lang.StartsWith("fr")))
+                {
+                    <option value="@v.VoiceUri">
+                        @v.Name (@v.Lang) @(v.Default ? " — default" : "")
+                    </option>
+                }
+            </select>
+        </div>
+
+        @if (_selectedVoice is not null)
+        {
+            <div class="small opacity-75">
+                Selected: <strong>@_selectedVoice.Name</strong>
+                — @_selectedVoice.Lang
+            </div>
+        }
+
+    }
+
 </div>
 
-@if (_voicesJson is null)
-{
-    <p class="text-muted mb-0">Click Refresh to load voices.</p>
-}
-else
-{
-    <pre class="small bg-light border rounded p-2" style="max-height: 50vh; overflow: auto;">@_voicesJson</pre>
-}
- *@
 @code
 {
-    private IJSObjectReference? _module;
     private string? _voicesJson;
+    private List<VoiceInfo>? _voices;
     private string? _voicesLoadMessage;
+
+    private string? _selectedVoiceUri;
+
+    private VoiceInfo? _selectedVoice =>
+        _voices?.FirstOrDefault(v => v.VoiceUri == _selectedVoiceUri);
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!firstRender)
-        {
-            return;
-        }
+        if (!firstRender) return;
 
-        _module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/voices.js");
         await LoadVoicesAsync();
     }
 
     private async Task LoadVoicesAsync()
     {
-        if (_module is null)
-        {
-            _voicesLoadMessage = "Loading JS module...";
-            return;
-        }
+        _voicesJson = await JS.InvokeAsync<string>("getVoicesJson", "fr-FR");
 
         _voicesLoadMessage = "Loading voices...";
         StateHasChanged();
 
         try
         {
-            _voicesJson = await _module.InvokeAsync<string>("getVoicesJson");
-            _voicesLoadMessage = $"Loaded {CountVoices(_voicesJson)} voice(s).";
+            _voices = JsonSerializer.Deserialize<List<VoiceInfo>>(_voicesJson);
+
+            // auto-select first French voice or default voice
+            _selectedVoiceUri = _voices
+                .FirstOrDefault(v => v.Lang.StartsWith("fr") && v.Default)?.VoiceUri
+                ?? _voices.FirstOrDefault(v => v.Lang.StartsWith("fr"))?.VoiceUri;
+
+            _voicesLoadMessage = $"Loaded {_voices.Count} voice(s).";
         }
         catch (JSException ex)
         {
             _voicesLoadMessage = "Failed to load voices.";
-            _voicesJson = ex.Message;
+            Console.WriteLine(ex.Message);
         }
+
+        StateHasChanged();
     }
 
-    private static int CountVoices(string? json)
+    private async Task OnVoiceChanged()
     {
-        if (string.IsNullOrWhiteSpace(json))
-        {
-            return 0;
-        }
+        Console.WriteLine($"Voice changed to {_selectedVoiceUri}");
 
-        try
-        {
-            using var doc = System.Text.Json.JsonDocument.Parse(json);
-            return doc.RootElement.ValueKind == System.Text.Json.JsonValueKind.Array
-                ? doc.RootElement.GetArrayLength()
-                : 0;
-        }
-        catch
-        {
-            return 0;
-        }
+        // example: push to JS
+        if (JS is not null && _selectedVoiceUri is not null)
+            await JS.InvokeVoidAsync("setVoice", _selectedVoiceUri);
     }
 
-    public async ValueTask DisposeAsync()
-    {
-        if (_module is not null)
-        {
-            await _module.DisposeAsync();
-        }
-    }
 }

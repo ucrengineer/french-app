@@ -30,55 +30,9 @@
         <span class="dismiss">🗙</span>
     </div>
 
-    <script>
-        window.speakText = function (text, lang) {
-            if (!text) return;
-
-            if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') {
-                console.warn('Speech synthesis is not supported in this browser.');
-                return;
-            }
-
-            const synth = window.speechSynthesis;
-            const targetLang = lang || 'fr-FR';
-
-            function speakNow() {
-                // Cancel any in-progress speech so repeated clicks behave predictably
-                synth.cancel();
-
-                const voices = synth.getVoices();
-
-                // Try exact match first, then language prefix (fr vs fr-FR)
-                let voice = voices.find(v => v.voiceURI === "com.apple.voice.compact.fr-FR.Thomas");
-
-                const utterance = new SpeechSynthesisUtterance(text);
-
-                if (voice) {
-                    utterance.voice = voice;
-                    utterance.lang = voice.lang;
-                } else {
-                    // fallback
-                    utterance.lang = targetLang;
-                    console.warn("No matching voice found for", targetLang);
-                }
-
-                synth.speak(utterance);
-            }
-
-            // Mobile browsers load voices asynchronously
-            if (synth.getVoices().length === 0) {
-                const handler = function () {
-                    synth.removeEventListener('voiceschanged', handler);
-                    speakNow();
-                };
-                synth.addEventListener('voiceschanged', handler);
-            } else {
-                speakNow();
-            }
-        };
-    </script>
     <script src="lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/toast.js"></script>
+    <script src="js/voices.js"></script>
     <script src="_framework/blazor.webassembly#[.{fingerprint}].js"></script>
 </body>
 
