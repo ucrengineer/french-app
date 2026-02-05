@@ -1,13 +1,14 @@
-export async function getVoicesJson() {
-    if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') {
-        return JSON.stringify({ error: 'Speech synthesis is not supported in this browser.' }, null, 2);
+window.getVoicesJson = async (lang = 'fr-FR') => {
+
+    if (!('speechSynthesis' in window)) {
+        return JSON.stringify({ error: 'Speech synthesis not supported' });
     }
 
     const synth = window.speechSynthesis;
 
-    const getVoicesAsync = () => new Promise((resolve) => {
-        const voices = synth.getVoices();
-        if (voices && voices.length > 0) {
+    const getVoicesAsync = () => new Promise(resolve => {
+        let voices = synth.getVoices();
+        if (voices.length) {
             resolve(voices);
             return;
         }
@@ -27,25 +28,71 @@ export async function getVoicesJson() {
 
     const voices = await getVoicesAsync();
 
-    const serialized = (voices || []).map((v) => {
-        const obj = {};
-        for (const k in v) {
-            try {
-                obj[k] = v[k];
-            } catch {
-                // ignore
-            }
+    const filtered = !lang
+        ? voices
+        : voices.filter(v =>
+            (v.lang || '').toLowerCase() === lang.toLowerCase());
+
+    const serialized = filtered.map(v => ({
+        voiceURI: v.voiceURI,
+        name: v.name,
+        lang: v.lang,
+        localService: v.localService,
+        default: v.default
+    }));
+
+    return JSON.stringify(serialized);
+};
+
+window.setVoice = (voiceUri) =>
+{
+    window.selectedVoice = voiceUri;
+}
+window.speakText = function (text, lang) {
+    if (!text) return;
+
+    if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') {
+        console.warn('Speech synthesis is not supported in this browser.');
+        return;
+    }
+
+    const synth = window.speechSynthesis;
+    const targetLang = lang || 'fr-FR';
+
+    function speakNow() {
+        // Cancel any in-progress speech so repeated clicks behave predictably
+        synth.cancel();
+
+        const voices = synth.getVoices();
+
+        const preferredVoiceUri = window.selectedVoice ?? "com.apple.voice.compact.fr-FR.Thomas";
+
+        // Try exact match first, then language prefix (fr vs fr-FR)
+        let voice = voices.find(v => v.voiceURI === preferredVoiceUri);
+
+
+        const utterance = new SpeechSynthesisUtterance(text);
+
+        if (voice) {
+            utterance.voice = voice;
+            utterance.lang = voice.lang;
+        } else {
+            // fallback
+            utterance.lang = targetLang;
+            console.warn("No matching voice found for", targetLang);
         }
 
-        // Common properties (ensure they show even if non-enumerable)
-        obj.voiceURI = v.voiceURI;
-        obj.name = v.name;
-        obj.lang = v.lang;
-        obj.localService = v.localService;
-        obj.default = v.default;
+        synth.speak(utterance);
+    }
 
-        return obj;
-    });
-
-    return JSON.stringify(serialized, null, 2);
-}
+    // Mobile browsers load voices asynchronously
+    if (synth.getVoices().length === 0) {
+        const handler = function () {
+            synth.removeEventListener('voiceschanged', handler);
+            speakNow();
+        };
+        synth.addEventListener('voiceschanged', handler);
+    } else {
+        speakNow();
+    }
+};
